@@ -33,6 +33,14 @@ main :: proc() {
             }) {
                 os.exit(1)
             }
+        case .Clean:
+            if !commands.clean({
+                path = args.path,
+                all = args.clean_all,
+                verbose = args.verbose,
+            }) {
+                os.exit(1)
+            }
         case:
             fmt.eprintln("Unknown command")
             os.exit(1)

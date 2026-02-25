@@ -25,6 +25,7 @@ Args :: struct {
     verbose  : bool,
     quiet    : bool,
     no_cache : bool,
+    clean_all: bool,
     raw_args : []string,
 }
 
@@ -79,6 +80,8 @@ parse :: proc(argv: []string) -> Args {
                 i += 1
                 args.out = rest[i]
             }
+        case rest[i] == "--all":
+            args.clean_all = true
         case strings.has_prefix(rest[i], "--profile="):
             args.profile = rest[i][len("--profile="):]
         case strings.has_prefix(rest[i], "--target="):

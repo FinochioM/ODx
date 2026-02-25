@@ -2,7 +2,7 @@
 name = "myapp"
 root = "src"            
 entry = "main"         
-out_dir = "build"       
+out_dir = "dist"       
 
 [build]
 odin_cmd = "odin"       
