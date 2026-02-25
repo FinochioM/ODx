@@ -2,8 +2,8 @@ package main
 
 import "core:fmt"
 import "core:os"
-import "cli"
-import "commands"
+import "src:cli"
+import "src:commands"
 
 main :: proc() {
     args := cli.parse(os.args[1:])
@@ -11,6 +11,8 @@ main :: proc() {
     #partial switch args.command {
         case .Doctor:
             commands.doctor()
+        case .List:
+            commands.list(args.path)
         case:
             fmt.eprintln("Unknown command")
             os.exit(1)
