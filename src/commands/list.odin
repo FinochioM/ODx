@@ -18,4 +18,15 @@ list :: proc(path: string) {
     } else {
         fmt.printfln("manifest: none (ad-hoc mode)")
     }
+
+    sources, src_ok := module.collect_sources(mod.root)
+    if !src_ok {
+        fmt.eprintln("odx: failed to collect sources")
+        return
+    }
+
+    fmt.printfln("sources: %d .odin file(s)", len(sources))
+    for s in sources {
+        fmt.printfln("  %s", s)
+    }
 }
