@@ -13,6 +13,16 @@ main :: proc() {
             commands.doctor()
         case .List:
             commands.list(args.path)
+        case .Build:
+            if !commands.build({
+                path = args.path,
+                profile = args.profile,
+                target = args.target,
+                out = args.out,
+                verbose = args.verbose,
+            }) {
+                os.exit(1)
+            }
         case:
             fmt.eprintln("Unknown command")
             os.exit(1)

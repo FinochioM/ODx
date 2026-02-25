@@ -8,6 +8,7 @@ out_dir = "build"
 odin_cmd = "odin"       
 default_profile = "dev"
 default_target = "host"
+collections = { src = "src" }
 
 [profiles.dev]
 flags = ["-debug"]
