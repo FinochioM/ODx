@@ -1,0 +1,36 @@
+[project]
+name = "myapp"
+root = "src"            
+entry = "main"         
+out_dir = "build"       
+
+[build]
+odin_cmd = "odin"       
+default_profile = "dev"
+default_target = "host"
+
+[profiles.dev]
+flags = ["-debug"]
+defines = { LOG_LEVEL = "debug" }
+
+[profiles.release]
+flags = ["-o:speed", "-no-bounds-check"]
+defines = { LOG_LEVEL = "info" }
+
+[targets.host]
+triple = "host"
+
+[targets.windows-amd64]
+triple = "windows_amd64"
+flags = []
+defines = {}
+
+[deps]
+stb = { git = "https://github.com/nothings/stb", rev = "a1b2c3d4" }
+mylib = { path = "../libs/mylib" }
+
+[tasks.codegen]
+deps = ["sources"]
+cmd = ["python", "tools/codegen.py", "--out", "{gen_dir}"]
+inputs = ["schemas/**", "tools/codegen.py"]
+outputs = ["{gen_dir}/**"]
