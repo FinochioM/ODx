@@ -8,16 +8,21 @@ import "core:strings"
 import "src:module"
 
 Build_Args :: struct {
-    path:       string,
-    profile:    string,
-    target:     string,
-    out:        string,
-    verbose:    bool,
+    path:    string,
+    profile: string,
+    target:  string,
+    out:     string,
+    verbose: bool,
 }
 
 build :: proc(a: Build_Args) -> bool {
-    mod, ok := module.resolve(a.path)
-    if !ok do return false
+    _, ok := build_binary(a)
+    return ok
+}
+
+build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
+    mod, mod_ok := module.resolve(a.path)
+    if !mod_ok do return "", false
 
     manifest: module.Manifest
     has_manifest := false
@@ -25,11 +30,11 @@ build :: proc(a: Build_Args) -> bool {
     if mod.has_manifest {
         manifest_path := filepath.join({mod.root, "odx.toml"})
         manifest, has_manifest = module.load_manifest(manifest_path)
-        if !has_manifest do return false
+        if !has_manifest do return "", false
     }
 
     entry, entry_ok := module.resolve_entry(mod, manifest, has_manifest)
-    if !entry_ok do return false
+    if !entry_ok do return "", false
 
     profile := a.profile
     if profile == "" {
@@ -54,7 +59,7 @@ build :: proc(a: Build_Args) -> bool {
     bin_dir := filepath.join({mod.root, out_dir, target, profile, "bin"})
     if !make_dir_all(bin_dir) {
         fmt.eprintfln("odx: could not create output dir '%s'", bin_dir)
-        return false
+        return "", false
     }
 
     bin_name := name
@@ -62,7 +67,7 @@ build :: proc(a: Build_Args) -> bool {
         bin_name = strings.concatenate({name, ".exe"})
     }
 
-    bin_path := a.out if a.out != "" else filepath.join({bin_dir, bin_name})
+    bin_path = a.out if a.out != "" else filepath.join({bin_dir, bin_name})
 
     odin_cmd := "odin"
     if has_manifest && manifest.build.odin_cmd != "" {
@@ -84,9 +89,9 @@ build :: proc(a: Build_Args) -> bool {
             }
         }
 
-        for name, rel_path in manifest.build.collections {
+        for col_name, rel_path in manifest.build.collections {
             abs_path := filepath.join({mod.root, rel_path})
-            append(&argv, fmt.aprintf("-collection:%s=%s", name, abs_path))
+            append(&argv, fmt.aprintf("-collection:%s=%s", col_name, abs_path))
         }
     } else if profile == "dev" {
         append(&argv, "-debug")
@@ -98,21 +103,20 @@ build :: proc(a: Build_Args) -> bool {
 
     state, _, stderr, run_err := os2.process_exec({command = argv[:]}, context.allocator)
     if run_err != nil {
-        fmt.eprintfln("odx: failed to lunch odin: %v", run_err)
-        return false
+        fmt.eprintfln("odx: failed to launch odin: %v", run_err)
+        return "", false
     }
 
     if state.exit_code != 0 {
         if len(stderr) > 0 {
             fmt.eprint(string(stderr))
         }
-
         fmt.eprintfln("odx: build failed (exit code %d)", state.exit_code)
-        return false
+        return "", false
     }
 
     fmt.printfln("odx: built %s", bin_path)
-    return true
+    return bin_path, true
 }
 
 @(private)

@@ -23,6 +23,16 @@ main :: proc() {
             }) {
                 os.exit(1)
             }
+        case .Run:
+            if !commands.run({
+                path = args.path,
+                profile = args.profile,
+                target = args.target,
+                verbose = args.verbose,
+                run_args = args.raw_args,
+            }) {
+                os.exit(1)
+            }
         case:
             fmt.eprintln("Unknown command")
             os.exit(1)
