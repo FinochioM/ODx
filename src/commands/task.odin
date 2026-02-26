@@ -5,6 +5,7 @@ import "core:os"
 import "core:os/os2"
 import "core:path/filepath"
 import "core:strings"
+import "core:slice"
 import "src:module"
 import "src:cache"
 
@@ -44,6 +45,45 @@ run_task :: proc(a: Task_Args) -> bool {
     return exec_task(a.task_name, task, mod, manifest, a.verbose, a.run_args)
 }
 
+@(private)
+run_deps :: proc(
+    task:      module.Task,
+    mod:       module.Module,
+    manifest:  module.Manifest,
+    verbose:   bool,
+    in_progress: ^[dynamic]string,
+) -> bool {
+    for dep_name in task.deps {
+        for visiting in in_progress^ {
+            if visiting == dep_name {
+                fmt.eprintfln("odx: cycle detected: '%s' is already in the current dependency chain", dep_name)
+                return false
+            }
+        }
+
+        dep_task, found := manifest.tasks[dep_name]
+        if !found {
+            fmt.eprintfln("odx: task '%s' depends on unknown task '%s'", task.deps[0], dep_name)
+            return false
+        }
+
+        append(in_progress, dep_name)
+
+        if !run_deps(dep_task, mod, manifest, verbose, in_progress) {
+            return false
+        }
+
+        if !exec_task(dep_name, dep_task, mod, manifest, verbose, nil) {
+            fmt.eprintfln("odx: dependency '%s' failed", dep_name)
+            return false
+        }
+
+        pop(in_progress)
+    }
+
+    return true
+}
+
 exec_task :: proc(
     name:     string,
     task:     module.Task,
@@ -55,6 +95,17 @@ exec_task :: proc(
     if len(task.cmd) == 0 {
         fmt.eprintfln("odx: task '%s' has no cmd defined", name)
         return false
+    }
+
+    if len(task.deps) > 0 {
+        in_progress := make([dynamic]string)
+        defer delete(in_progress)
+
+        append(&in_progress, name)
+
+        if !run_deps(task, mod, manifest, verbose, &in_progress) {
+            return false
+        }
     }
 
     use_cache := len(task.inputs) > 0 || len(task.outputs) > 0

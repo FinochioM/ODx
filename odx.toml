@@ -9,7 +9,6 @@ odin_cmd = "odin"
 default_profile = "dev"
 default_target = "host"
 collections = { src = "src" }
-pre_build = ["tasks.fail"]
 
 [profiles.dev]
 flags = ["-debug"]
@@ -31,10 +30,17 @@ defines = {}
 stb = { git = "https://github.com/nothings/stb", rev = "a1b2c3d4" }
 mylib = { path = "../libs/mylib" }
 
-[tasks.fail]
-cmd = ["false"]
+[tasks.greet]
+cmd = ["echo", "greet"]
 
-[tasks.echo_test]
-cmd = ["echo", "test"]
-inputs = ["src/**/*.odin"]
-outputs = ["{out_dir}/echo.txt"]
+[tasks.greet_with_dep]
+deps = ["greet"]
+cmd = ["echo", "greet_with_dep"]
+
+[tasks.a]
+deps = ["b"]
+cmd = ["echo", "a"]
+
+[tasks.b]
+deps = ["a"]
+cmd = ["echo", "b"]
