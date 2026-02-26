@@ -33,3 +33,8 @@ mylib = { path = "../libs/mylib" }
 
 [tasks.fail]
 cmd = ["false"]
+
+[tasks.echo_test]
+cmd = ["echo", "test"]
+inputs = ["src/**/*.odin"]
+outputs = ["{out_dir}/echo.txt"]

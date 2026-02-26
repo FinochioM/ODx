@@ -1,10 +1,12 @@
 package commands
 
 import "core:fmt"
+import "core:os"
 import "core:os/os2"
 import "core:path/filepath"
 import "core:strings"
 import "src:module"
+import "src:cache"
 
 Task_Args :: struct {
     path:      string,
@@ -55,14 +57,46 @@ exec_task :: proc(
         return false
     }
 
+    use_cache := len(task.inputs) > 0 || len(task.outputs) > 0
+
+    var_map := build_template_vars(mod, manifest)
+    defer delete(var_map)
+
+    cache_key: string
+    stamp:     string
+
+    if use_cache {
+        inputs, glob_ok := resolve_globs(task.inputs, mod.root, var_map)
+        defer delete(inputs)
+
+        if glob_ok {
+            key, key_ok := cache.compute_task_key({
+                task_name    = name,
+                profile      = "",
+                target       = "",
+                flags        = task.cmd,
+                defines      = {},
+                source_paths = inputs,
+                odin_version = "",
+            })
+
+            if key_ok {
+                cache_key = key
+                stamp     = cache.stamp_path(name, mod.root, key)
+
+                if cache.is_cache_hit(stamp, key) && outputs_exist(task.outputs, mod.root, var_map) {
+                    fmt.printfln("odx: task '%s' up-to-date (cached)", name)
+                    return true
+                }
+            }
+        }
+    }
+
     argv := make([dynamic]string)
     defer delete(argv)
 
-    vars := build_template_vars(mod, manifest)
-    defer delete(vars)
-
     for part in task.cmd {
-        append(&argv, expand_vars(part, vars, run_args))
+        append(&argv, expand_vars(part, var_map, run_args))
     }
 
     env := make([dynamic]string)
@@ -95,7 +129,66 @@ exec_task :: proc(
         return false
     }
 
+    if use_cache && cache_key != "" {
+        cache.write_stamp(stamp, cache_key)
+    }
+
     fmt.printfln("odx: task '%s' completed", name)
+    return true
+}
+
+@(private)
+resolve_globs :: proc(patterns: []string, root: string, vars: map[string]string) -> (files: []string, ok: bool) {
+    out := make([dynamic]string)
+
+    for pat in patterns {
+        expanded := pat
+        for k, v in vars {
+            expanded, _ = strings.replace_all(expanded, k, v)
+        }
+
+        abs_pat := expanded if filepath.is_abs(expanded) else filepath.join({root, expanded})
+
+        matches, glob_err := filepath.glob(abs_pat)
+        if glob_err != .None {
+            delete(out)
+            return nil, false
+        }
+
+        for m in matches {
+            append(&out, m)
+        }
+    }
+
+    return out[:], true
+}
+
+@(private)
+outputs_exist :: proc(patterns: []string, root: string, vars: map[string]string) -> bool {
+    if len(patterns) == 0 do return false
+
+    for pat in patterns {
+        expanded := pat
+        for k, v in vars {
+            expanded, _ = strings.replace_all(expanded, k, v)
+        }
+
+        abs_path := expanded if filepath.is_abs(expanded) else filepath.join({root, expanded})
+
+        is_glob := strings.contains_any(abs_path, "*?[")
+
+        if is_glob {
+            matches, glob_err := filepath.glob(abs_path)
+            if glob_err != .None || len(matches) == 0 {
+                return false
+            }
+        } else {
+            if !os.exists(abs_path) {
+                return false
+            }
+        }
+    }
+
     return true
 }
 
