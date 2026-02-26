@@ -2,24 +2,27 @@ package commands
 
 import "core:fmt"
 import "core:os/os2"
+import "core:path/filepath"
+import "src:module"
 
 Run_Args :: struct {
-    path:       string,
-    profile:    string,
-    target:     string,
-    verbose:    bool,
-    run_args:   []string,
+    path:     string,
+    profile:  string,
+    target:   string,
+    verbose:  bool,
+    run_args: []string,
 }
 
 run :: proc(a: Run_Args) -> bool {
     bin_path, ok := build_binary({
-        path = a.path,
+        path    = a.path,
         profile = a.profile,
-        target = a.target,
+        target  = a.target,
         verbose = a.verbose,
     })
-
     if !ok do return false
+
+    if pre_run_hooks(a.path, a.verbose) == .Failed do return false
 
     argv := make([dynamic]string)
     defer delete(argv)
@@ -45,4 +48,24 @@ run :: proc(a: Run_Args) -> bool {
     }
 
     return true
+}
+
+Hook_Result :: enum { OK, Failed, NoManifest }
+
+pre_run_hooks :: proc(path: string, verbose: bool) -> Hook_Result {
+    mod, ok := module.resolve(path)
+    if !ok do return .Failed
+
+    if !mod.has_manifest do return .NoManifest
+
+    manifest_path := filepath.join({mod.root, "odx.toml"})
+    manifest, man_ok := module.load_manifest(manifest_path)
+    if !man_ok do return .Failed
+
+    if len(manifest.build.pre_run) == 0 do return .OK
+
+    if !run_hooks(manifest.build.pre_run, mod, manifest, verbose) {
+        return .Failed
+    }
+    return .OK
 }

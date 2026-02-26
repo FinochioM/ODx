@@ -9,6 +9,7 @@ odin_cmd = "odin"
 default_profile = "dev"
 default_target = "host"
 collections = { src = "src" }
+pre_build = ["tasks.fail"]
 
 [profiles.dev]
 flags = ["-debug"]
@@ -30,8 +31,5 @@ defines = {}
 stb = { git = "https://github.com/nothings/stb", rev = "a1b2c3d4" }
 mylib = { path = "../libs/mylib" }
 
-[tasks.codegen]
-deps = ["sources"]
-cmd = ["python", "tools/codegen.py", "--out", "{gen_dir}"]
-inputs = ["schemas/**", "tools/codegen.py"]
-outputs = ["{gen_dir}/**"]
+[tasks.fail]
+cmd = ["false"]

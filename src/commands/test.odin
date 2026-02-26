@@ -63,6 +63,12 @@ test :: proc(a: Test_Args) -> bool {
         fmt.println(strings.join(argv[:], " "))
     }
 
+    if has_manifest && len(manifest.build.pre_test) > 0 {
+        if !run_hooks(manifest.build.pre_test, mod, manifest, a.verbose) {
+            return false
+        }
+    }
+
     state, stdout, stderr, run_err := os2.process_exec({command = argv[:]}, context.allocator)
     if run_err != nil {
         fmt.eprintfln("odx: failed to launch odin: %v", run_err)

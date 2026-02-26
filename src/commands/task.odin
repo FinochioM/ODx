@@ -39,8 +39,19 @@ run_task :: proc(a: Task_Args) -> bool {
         return false
     }
 
+    return exec_task(a.task_name, task, mod, manifest, a.verbose, a.run_args)
+}
+
+exec_task :: proc(
+    name:     string,
+    task:     module.Task,
+    mod:      module.Module,
+    manifest: module.Manifest,
+    verbose:  bool,
+    run_args: []string,
+) -> bool {
     if len(task.cmd) == 0 {
-        fmt.eprintfln("odx: task '%s' has no cmd defined", a.task_name)
+        fmt.eprintfln("odx: task '%s' has no cmd defined", name)
         return false
     }
 
@@ -51,7 +62,7 @@ run_task :: proc(a: Task_Args) -> bool {
     defer delete(vars)
 
     for part in task.cmd {
-        append(&argv, expand_vars(part, vars, a.run_args))
+        append(&argv, expand_vars(part, vars, run_args))
     }
 
     env := make([dynamic]string)
@@ -61,7 +72,7 @@ run_task :: proc(a: Task_Args) -> bool {
         append(&env, fmt.aprintf("%s=%s", k, v))
     }
 
-    if a.verbose {
+    if verbose {
         fmt.println(strings.join(argv[:], " "))
     }
 
@@ -72,7 +83,7 @@ run_task :: proc(a: Task_Args) -> bool {
 
     state, stdout, stderr, run_err := os2.process_exec(desc, context.allocator)
     if run_err != nil {
-        fmt.eprintfln("odx: failed to launch task '%s': %v", a.task_name, run_err)
+        fmt.eprintfln("odx: failed to launch task '%s': %v", name, run_err)
         return false
     }
 
@@ -80,11 +91,11 @@ run_task :: proc(a: Task_Args) -> bool {
     if len(stderr) > 0 do fmt.eprint(string(stderr))
 
     if state.exit_code != 0 {
-        fmt.eprintfln("odx: task '%s' failed (exit code %d)", a.task_name, state.exit_code)
+        fmt.eprintfln("odx: task '%s' failed (exit code %d)", name, state.exit_code)
         return false
     }
 
-    fmt.printfln("odx: task '%s' completed", a.task_name)
+    fmt.printfln("odx: task '%s' completed", name)
     return true
 }
 

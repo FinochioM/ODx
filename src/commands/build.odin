@@ -76,6 +76,12 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
         odin_cmd = manifest.build.odin_cmd
     }
 
+    if has_manifest && len(manifest.build.pre_build) > 0 {
+        if !run_hooks(manifest.build.pre_build, mod, manifest, a.verbose) {
+            return "", false
+        }
+    }
+
     if !a.no_cache {
         sources, src_ok := module.collect_sources(mod.root)
         if src_ok {
