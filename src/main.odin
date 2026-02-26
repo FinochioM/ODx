@@ -20,6 +20,7 @@ main :: proc() {
                 target = args.target,
                 out = args.out,
                 verbose = args.verbose,
+                no_cache = args.no_cache,
             }) {
                 os.exit(1)
             }

@@ -5,6 +5,7 @@ import "core:os"
 import "core:os/os2"
 import "core:path/filepath"
 import "core:strings"
+import "src:cache"
 import "src:module"
 
 Build_Args :: struct {
@@ -13,6 +14,7 @@ Build_Args :: struct {
     target:  string,
     out:     string,
     verbose: bool,
+    no_cache: bool,
 }
 
 build :: proc(a: Build_Args) -> bool {
@@ -57,7 +59,7 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
     }
 
     bin_dir := filepath.join({mod.root, out_dir, target, profile, "bin"})
-    if !make_dir_all(bin_dir) {
+    if !cache.make_dir_all(bin_dir) {
         fmt.eprintfln("odx: could not create output dir '%s'", bin_dir)
         return "", false
     }
@@ -72,6 +74,41 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
     odin_cmd := "odin"
     if has_manifest && manifest.build.odin_cmd != "" {
         odin_cmd = manifest.build.odin_cmd
+    }
+
+    if !a.no_cache {
+        sources, src_ok := module.collect_sources(mod.root)
+        if src_ok {
+            flags: []string
+            defines: map[string]string
+            if has_manifest {
+                if p, found := manifest.profiles[profile]; found {
+                    flags = p.flags
+                    defines = p.defines
+                }
+            }
+
+            odin_ver := get_odin_version(context.temp_allocator)
+            key, key_ok := cache.compute_task_key({
+                task_name = "build",
+                profile = profile,
+                target = target,
+                flags = flags,
+                defines = defines,
+                source_paths = sources,
+                odin_version = odin_ver,
+            })
+
+            if key_ok {
+                stamp := cache.stamp_path("build", mod.root, key)
+                if cache.is_cache_hit(stamp, key) && os.exists(bin_path) {
+                    fmt.printfln("odx: %s (cached)", bin_path)
+                    return bin_path, true
+                }
+
+                defer cache.write_stamp(stamp, key)
+            }
+        }
     }
 
     argv := make([dynamic]string)
@@ -117,17 +154,4 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
 
     fmt.printfln("odx: built %s", bin_path)
     return bin_path, true
-}
-
-@(private)
-make_dir_all :: proc(path: string) -> bool {
-    if os.exists(path) do return true
-
-    parent := filepath.dir(path)
-    if parent != path {
-        if !make_dir_all(parent) do return false
-    }
-
-    err := os.make_directory(path)
-    return err == os.ERROR_NONE
 }
