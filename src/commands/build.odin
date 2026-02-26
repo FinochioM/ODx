@@ -7,6 +7,7 @@ import "core:path/filepath"
 import "core:strings"
 import "src:cache"
 import "src:module"
+import "src:deps"
 
 Build_Args :: struct {
     path:    string,
@@ -37,6 +38,20 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
 
     entry, entry_ok := module.resolve_entry(mod, manifest, has_manifest)
     if !entry_ok do return "", false
+
+    extra_collections := make(map[string]string)
+    defer delete(extra_collections)
+
+    if has_manifest && len(manifest.deps) > 0 {
+        resolved, deps_ok := deps.resolve_all(mod, manifest)
+        if !deps_ok do return "", false
+
+        deps.write_lock(mod.root, resolved)
+
+        for r in resolved {
+            extra_collections[r.name] = r.path
+        }
+    }
 
     profile := a.profile
     if profile == "" {
@@ -134,6 +149,10 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
 
         for col_name, rel_path in manifest.build.collections {
             abs_path := filepath.join({mod.root, rel_path})
+            append(&argv, fmt.aprintf("-collection:%s=%s", col_name, abs_path))
+        }
+
+        for col_name, abs_path in extra_collections {
             append(&argv, fmt.aprintf("-collection:%s=%s", col_name, abs_path))
         }
     } else if profile == "dev" {

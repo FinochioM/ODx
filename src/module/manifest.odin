@@ -13,6 +13,7 @@ Manifest :: struct {
     profiles: map[string]Profile,
     targets:  map[string]Target,
     tasks:    map[string]Task,
+    deps:     map[string]Dep,
 }
 
 Build_Config :: struct {
@@ -42,6 +43,14 @@ Task :: struct {
     inputs:  []string,
     outputs: []string,
     env:     map[string]string,
+}
+
+Dep_Kind :: enum { Path, Git }
+
+Dep :: struct {
+    kind:   Dep_Kind,
+    url:    string,
+    rev:    string,
 }
 
 load_manifest :: proc(path: string, allocator := context.allocator) -> (m: Manifest, ok: bool) {
@@ -109,6 +118,21 @@ load_manifest :: proc(path: string, allocator := context.allocator) -> (m: Manif
                 inputs =  toml.get_array(tt, "inputs"),
                 outputs = toml.get_array(tt, "outputs"),
                 env =     table_to_string_map(toml.get_table(tt, "env"), allocator),
+            }
+        }
+    }
+
+    m.deps = make(map[string]Dep, allocator)
+    if deps_table := toml.get_table(table, "deps"); deps_table != nil {
+        for name, val in deps_table {
+            dt, is_table := val.(toml.Table)
+            if !is_table do continue
+
+            if path_str, ok := dt["path"].(string); ok {
+                m.deps[name] = Dep{kind = .Path, url = path_str}
+            } else if git_str, ok := dt["git"].(string); ok {
+                rev, _ := dt["rev"].(string)
+                m.deps[name] = Dep{kind = .Git, url = git_str, rev = rev}
             }
         }
     }

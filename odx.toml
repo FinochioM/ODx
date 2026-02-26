@@ -27,7 +27,6 @@ flags = []
 defines = {}
 
 [deps]
-stb = { git = "https://github.com/nothings/stb", rev = "a1b2c3d4" }
 mylib = { path = "../libs/mylib" }
 
 [tasks.greet]
