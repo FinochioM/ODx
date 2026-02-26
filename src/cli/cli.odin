@@ -8,7 +8,6 @@ Command :: enum {
     Run,
     Build,
     Test,
-    Fmt,
     Check,
     Clean,
     Task,
@@ -43,7 +42,6 @@ parse :: proc(argv: []string) -> Args {
     case "run":    args.command = .Run
     case "build":  args.command = .Build
     case "test":   args.command = .Test
-    case "fmt":    args.command = .Fmt
     case "check":  args.command = .Check
     case "clean":  args.command = .Clean
     case "task":   args.command = .Task
@@ -112,7 +110,6 @@ Commands:
   run     Build and run
   build   Build only
   test    Run tests
-  fmt     Format source
   check   Type-check only
   clean   Remove build outputs
   task    Run a named task
