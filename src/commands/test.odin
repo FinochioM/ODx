@@ -6,15 +6,15 @@ import "core:path/filepath"
 import "core:strings"
 import "src:module"
 
-Check_Args :: struct {
+Test_Args :: struct {
     path:       string,
     profile:    string,
     target:     string,
     verbose:    bool,
 }
 
-check :: proc(a: Check_Args) -> bool {
-    mod, ok := module.resolve(a.path)
+test :: proc(a: Test_Args) -> bool {
+        mod, ok := module.resolve(a.path)
     if !ok do return false
 
     manifest: module.Manifest
@@ -31,7 +31,7 @@ check :: proc(a: Check_Args) -> bool {
 
     profile := a.profile
     if profile == "" {
-        profile = manifest.build.default_profile if has_manifest else "dev"
+        profile = "test"
     }
 
     odin_cmd := "odin"
@@ -42,19 +42,17 @@ check :: proc(a: Check_Args) -> bool {
     argv := make([dynamic]string)
     defer delete(argv)
 
-    append(&argv, odin_cmd, "check", entry)
+    append(&argv, odin_cmd, "test", entry)
 
     if has_manifest {
         if p, found := manifest.profiles[profile]; found {
             for flag in p.flags {
                 append(&argv, flag)
             }
-
             for k, v in p.defines {
                 append(&argv, fmt.aprintf("-define:%s=%s", k, v))
             }
         }
-
         for col_name, rel_path in manifest.build.collections {
             abs_path := filepath.join({mod.root, rel_path})
             append(&argv, fmt.aprintf("-collection:%s=%s", col_name, abs_path))
@@ -79,11 +77,10 @@ check :: proc(a: Check_Args) -> bool {
         if len(stderr) > 0 {
             fmt.eprint(string(stderr))
         }
-
-        fmt.eprintfln("odx: check failed (exit code %d)", state.exit_code)
+        fmt.eprintfln("odx: tests failed (exit code %d)", state.exit_code)
         return false
     }
 
-    fmt.println("odx: check passed")
+    fmt.println("odx: tests passed")
     return true
 }

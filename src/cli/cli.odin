@@ -22,6 +22,7 @@ Args :: struct {
     profile  : string,
     target   : string,
     out      : string,
+    task_name: string,
     verbose  : bool,
     quiet    : bool,
     no_cache : bool,
@@ -54,6 +55,12 @@ parse :: proc(argv: []string) -> Args {
     }
 
     rest := argv[1:]
+
+    if args.command == .Task && len(rest) > 0 && rest[0][0] != '-' {
+        args.task_name = rest[0]
+        rest = rest[1:]
+    }
+
     for i := 0; i < len(rest); i += 1 {
         switch {
         case rest[i] == "-v" || rest[i] == "--verbose":

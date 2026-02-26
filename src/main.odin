@@ -50,6 +50,24 @@ main :: proc() {
             }) {
                 os.exit(1)
             }
+        case .Test:
+            if !commands.test({
+                path = args.path,
+                profile = args.profile,
+                target = args.target,
+                verbose = args.verbose,
+            }) {
+                os.exit(1)
+            }
+        case .Task:
+            if !commands.run_task({
+                path = args.path,
+                task_name = args.task_name,
+                verbose = args.verbose,
+                run_args = args.raw_args,
+            }) {
+                os.exit(1)
+            }
         case:
             fmt.eprintln("Unknown command")
             os.exit(1)
