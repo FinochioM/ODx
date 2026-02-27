@@ -43,7 +43,7 @@ jobs:
       - name: Install Odin (Windows)
         if: runner.os == 'Windows'
         run: |
-          curl -sLO https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
+          curl.exe -sLO --fail https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
           New-Item -ItemType Directory -Path odin-install
           Expand-Archive -Path ${{ matrix.odin_zip }} -DestinationPath odin-install
           $odinExe = Get-ChildItem -Recurse -Filter "odin.exe" odin-install | Select-Object -First 1
