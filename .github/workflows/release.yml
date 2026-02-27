@@ -12,12 +12,12 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            odin_zip: odin-ubuntu-amd64-dev-2026-01.zip
+            odin_zip: odin-linux-amd64-dev-2026-01.tar.gz
             binary:   odx
             asset:    odx-linux-amd64
 
-          - os: macos-13
-            odin_zip: odin-macos-amd64-dev-2026-01.zip
+          - os: macos-14
+            odin_zip: odin-macos-arm64-dev-2026-01.tar.gz
             binary:   odx
             asset:    odx-macos-amd64
 
@@ -34,9 +34,9 @@ jobs:
       - name: Install Odin (Unix)
         if: runner.os != 'Windows'
         run: |
-          curl -sLO https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
+          curl -sLO --fail https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
           mkdir odin-install
-          unzip -q ${{ matrix.odin_zip }} -d odin-install
+          tar -xzf ${{ matrix.odin_zip }} -C odin-install
           ODIN_BIN=$(find odin-install -maxdepth 3 -name "odin" -type f | head -1)
           chmod +x "$ODIN_BIN"
           echo "$PWD/$(dirname $ODIN_BIN)" >> $GITHUB_PATH
