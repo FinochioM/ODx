@@ -27,6 +27,7 @@ Args :: struct {
     no_cache : bool,
     clean_all: bool,
     raw_args : []string,
+    watch:     bool,
 }
 
 parse :: proc(argv: []string) -> Args {
@@ -85,6 +86,8 @@ parse :: proc(argv: []string) -> Args {
                 i += 1
                 args.out = rest[i]
             }
+        case rest[i] == "--watch":
+            args.watch = true
         case rest[i] == "--all":
             args.clean_all = true
         case strings.has_prefix(rest[i], "--profile="):
@@ -122,5 +125,6 @@ Flags:
   -o <path>
   -v / --verbose
   -q / --quiet
-  --no-cache`)
+  --no-cache
+  --watch`)
 }

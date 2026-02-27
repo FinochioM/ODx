@@ -5,16 +5,39 @@ import "core:os/os2"
 import "core:path/filepath"
 import "core:strings"
 import "src:module"
+import "src:watch"
 
 Test_Args :: struct {
-    path:       string,
-    profile:    string,
-    target:     string,
-    verbose:    bool,
+    path:    string,
+    profile: string,
+    target:  string,
+    verbose: bool,
+    watch:   bool,
 }
 
 test :: proc(a: Test_Args) -> bool {
-        mod, ok := module.resolve(a.path)
+    if a.watch {
+        return test_watch(a)
+    }
+    return test_once(a)
+}
+
+@(private)
+test_watch :: proc(a: Test_Args) -> bool {
+    for {
+        test_once(a)
+
+        sources := watch_sources(a.path)
+        fmt.println("odx: watching for changes...")
+        watch.wait_for_change(sources)
+        delete(sources)
+        fmt.println("\nodx: change detected, rerunning tests...")
+    }
+}
+
+@(private)
+test_once :: proc(a: Test_Args) -> bool {
+    mod, ok := module.resolve(a.path)
     if !ok do return false
 
     manifest: module.Manifest

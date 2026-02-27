@@ -6,21 +6,40 @@ import "core:os/os2"
 import "core:path/filepath"
 import "core:strings"
 import "src:cache"
-import "src:module"
 import "src:deps"
+import "src:module"
+import "src:watch"
 
 Build_Args :: struct {
-    path:    string,
-    profile: string,
-    target:  string,
-    out:     string,
-    verbose: bool,
+    path:     string,
+    profile:  string,
+    target:   string,
+    out:      string,
+    verbose:  bool,
     no_cache: bool,
+    watch:    bool,
 }
 
 build :: proc(a: Build_Args) -> bool {
+    if a.watch {
+        return build_watch(a)
+    }
     _, ok := build_binary(a)
     return ok
+}
+
+@(private)
+build_watch :: proc(a: Build_Args) -> bool {
+    for {
+        build_binary(a)
+
+        sources := watch_sources(a.path)
+        defer delete(sources)
+
+        fmt.println("odx: watching for changes...")
+        watch.wait_for_change(sources)
+        fmt.println("\nodx: change detected, rebuilding...")
+    }
 }
 
 build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
@@ -111,11 +130,11 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
 
             odin_ver := get_odin_version(context.temp_allocator)
             key, key_ok := cache.compute_task_key({
-                task_name = "build",
-                profile = profile,
-                target = target,
-                flags = flags,
-                defines = defines,
+                task_name    = "build",
+                profile      = profile,
+                target       = target,
+                flags        = flags,
+                defines      = defines,
                 source_paths = sources,
                 odin_version = odin_ver,
             })
@@ -179,4 +198,13 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
 
     fmt.printfln("odx: built %s", bin_path)
     return bin_path, true
+}
+
+watch_sources :: proc(path: string, allocator := context.allocator) -> []string {
+    mod, ok := module.resolve(path, allocator)
+    if !ok {
+        return nil
+    }
+    sources, _ := module.collect_sources(mod.root, allocator)
+    return sources
 }

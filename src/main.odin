@@ -21,6 +21,7 @@ main :: proc() {
                 out = args.out,
                 verbose = args.verbose,
                 no_cache = args.no_cache,
+                watch = args.watch,
             }) {
                 os.exit(1)
             }
@@ -31,6 +32,7 @@ main :: proc() {
                 target = args.target,
                 verbose = args.verbose,
                 run_args = args.raw_args,
+                watch = args.watch,
             }) {
                 os.exit(1)
             }
@@ -57,6 +59,7 @@ main :: proc() {
                 profile = args.profile,
                 target = args.target,
                 verbose = args.verbose,
+                watch = args.watch,
             }) {
                 os.exit(1)
             }

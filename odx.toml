@@ -27,7 +27,7 @@ flags = []
 defines = {}
 
 [deps]
-mylib = { path = "../libs/mylib" }
+odin_steamworks = { git = "https://github.com/jakubtomsu/odin-steamworks", rev = "ca307bcd51d849508d26988fbda0d4cdde9a6e68" }
 
 [tasks.greet]
 cmd = ["echo", "greet"]
