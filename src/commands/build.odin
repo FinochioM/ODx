@@ -5,8 +5,10 @@ import "core:os"
 import "core:os/os2"
 import "core:path/filepath"
 import "core:strings"
+import "core:time"
 import "src:cache"
 import "src:deps"
+import "src:events"
 import "src:module"
 import "src:watch"
 
@@ -116,6 +118,13 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
         }
     }
 
+    task_start := time.now()
+    events.emit(events.Task_Started{
+        event = "task_started",
+        task  = "build",
+        time  = events.now_string(context.temp_allocator),
+    })
+
     if !a.no_cache {
         sources, src_ok := module.collect_sources(mod.root)
         if src_ok {
@@ -123,7 +132,7 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
             defines: map[string]string
             if has_manifest {
                 if p, found := manifest.profiles[profile]; found {
-                    flags = p.flags
+                    flags   = p.flags
                     defines = p.defines
                 }
             }
@@ -142,9 +151,17 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
             if key_ok {
                 stamp := cache.stamp_path("build", mod.root, key)
                 if cache.is_cache_hit(stamp, key) && os.exists(bin_path) {
+                    events.emit(events.Cache_Hit{event = "cache_hit", task = "build"})
+                    events.emit(events.Task_Finished{
+                        event      = "task_finished",
+                        task       = "build",
+                        elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())),
+                        success    = true,
+                    })
                     fmt.printfln("odx: %s (cached)", bin_path)
                     return bin_path, true
                 }
+                events.emit(events.Cache_Miss{event = "cache_miss", task = "build"})
 
                 defer cache.write_stamp(stamp, key)
             }
@@ -182,8 +199,15 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
         fmt.println(strings.join(argv[:], " "))
     }
 
+    events.emit(events.Command_Exec{
+        event   = "command_exec",
+        task    = "build",
+        command = argv[:],
+    })
+
     state, _, stderr, run_err := os2.process_exec({command = argv[:]}, context.allocator)
     if run_err != nil {
+        events.emit(events.Task_Finished{event = "task_finished", task = "build", elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())), success = false})
         fmt.eprintfln("odx: failed to launch odin: %v", run_err)
         return "", false
     }
@@ -192,10 +216,17 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
         if len(stderr) > 0 {
             fmt.eprint(string(stderr))
         }
+        events.emit(events.Task_Finished{event = "task_finished", task = "build", elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())), success = false})
         fmt.eprintfln("odx: build failed (exit code %d)", state.exit_code)
         return "", false
     }
 
+    events.emit(events.Task_Finished{
+        event      = "task_finished",
+        task       = "build",
+        elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())),
+        success    = true,
+    })
     fmt.printfln("odx: built %s", bin_path)
     return bin_path, true
 }

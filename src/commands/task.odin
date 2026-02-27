@@ -5,9 +5,10 @@ import "core:os"
 import "core:os/os2"
 import "core:path/filepath"
 import "core:strings"
-import "core:slice"
 import "src:module"
 import "src:cache"
+import "src:events"
+import "core:time"
 
 Task_Args :: struct {
     path:      string,
@@ -100,9 +101,7 @@ exec_task :: proc(
     if len(task.deps) > 0 {
         in_progress := make([dynamic]string)
         defer delete(in_progress)
-
         append(&in_progress, name)
-
         if !run_deps(task, mod, manifest, verbose, &in_progress) {
             return false
         }
@@ -115,6 +114,13 @@ exec_task :: proc(
 
     cache_key: string
     stamp:     string
+
+    task_start := time.now()
+    events.emit(events.Task_Started{
+        event = "task_started",
+        task  = name,
+        time  = events.now_string(context.temp_allocator),
+    })
 
     if use_cache {
         inputs, glob_ok := resolve_globs(task.inputs, mod.root, var_map)
@@ -136,9 +142,18 @@ exec_task :: proc(
                 stamp     = cache.stamp_path(name, mod.root, key)
 
                 if cache.is_cache_hit(stamp, key) && outputs_exist(task.outputs, mod.root, var_map) {
+                    events.emit(events.Cache_Hit{event = "cache_hit", task = name})
+                    events.emit(events.Task_Finished{
+                        event      = "task_finished",
+                        task       = name,
+                        elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())),
+                        success    = true,
+                    })
                     fmt.printfln("odx: task '%s' up-to-date (cached)", name)
                     return true
                 }
+
+                events.emit(events.Cache_Miss{event = "cache_miss", task = name})
             }
         }
     }
@@ -161,6 +176,12 @@ exec_task :: proc(
         fmt.println(strings.join(argv[:], " "))
     }
 
+    events.emit(events.Command_Exec{
+        event   = "command_exec",
+        task    = name,
+        command = argv[:],
+    })
+
     desc := os2.Process_Desc{
         command = argv[:],
         env     = env[:] if len(env) > 0 else nil,
@@ -168,6 +189,12 @@ exec_task :: proc(
 
     state, stdout, stderr, run_err := os2.process_exec(desc, context.allocator)
     if run_err != nil {
+        events.emit(events.Task_Finished{
+            event      = "task_finished",
+            task       = name,
+            elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())),
+            success    = false,
+        })
         fmt.eprintfln("odx: failed to launch task '%s': %v", name, run_err)
         return false
     }
@@ -176,6 +203,12 @@ exec_task :: proc(
     if len(stderr) > 0 do fmt.eprint(string(stderr))
 
     if state.exit_code != 0 {
+        events.emit(events.Task_Finished{
+            event      = "task_finished",
+            task       = name,
+            elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())),
+            success    = false,
+        })
         fmt.eprintfln("odx: task '%s' failed (exit code %d)", name, state.exit_code)
         return false
     }
@@ -184,6 +217,12 @@ exec_task :: proc(
         cache.write_stamp(stamp, cache_key)
     }
 
+    events.emit(events.Task_Finished{
+        event      = "task_finished",
+        task       = name,
+        elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())),
+        success    = true,
+    })
     fmt.printfln("odx: task '%s' completed", name)
     return true
 }

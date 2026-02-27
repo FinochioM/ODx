@@ -27,6 +27,7 @@ Args :: struct {
     no_cache : bool,
     clean_all: bool,
     raw_args : []string,
+    json     : bool,
     watch:     bool,
 }
 
@@ -88,6 +89,8 @@ parse :: proc(argv: []string) -> Args {
             }
         case rest[i] == "--watch":
             args.watch = true
+        case rest[i] == "--json":
+            args.json = true
         case rest[i] == "--all":
             args.clean_all = true
         case strings.has_prefix(rest[i], "--profile="):

@@ -4,9 +4,14 @@ import "core:fmt"
 import "core:os"
 import "src:cli"
 import "src:commands"
+import "src:events"
 
 main :: proc() {
     args := cli.parse(os.args[1:])
+
+    if args.json {
+        events.enable()
+    }
     
     #partial switch args.command {
         case .Doctor:
