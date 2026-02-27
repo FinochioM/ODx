@@ -70,10 +70,16 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
 
+      - name: Rename artifacts
+        run: |
+          mv odx-linux-amd64/odx odx-linux-amd64/odx-linux-amd64
+          mv odx-macos-amd64/odx odx-macos-amd64/odx-macos-amd64
+          mv odx-windows-amd64.exe/odx.exe odx-windows-amd64.exe/odx-windows-amd64.exe
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            odx-linux-amd64/odx
-            odx-macos-amd64/odx
-            odx-windows-amd64.exe/odx.exe
+            odx-linux-amd64/odx-linux-amd64
+            odx-macos-amd64/odx-macos-amd64
+            odx-windows-amd64.exe/odx-windows-amd64.exe
