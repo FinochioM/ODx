@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -36,7 +37,9 @@ jobs:
           curl -sLO https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
           mkdir odin-install
           unzip -q ${{ matrix.odin_zip }} -d odin-install
-          echo "$PWD/odin-install" >> $GITHUB_PATH
+          ODIN_BIN=$(find odin-install -maxdepth 3 -name "odin" -type f | head -1)
+          chmod +x "$ODIN_BIN"
+          echo "$PWD/$(dirname $ODIN_BIN)" >> $GITHUB_PATH
 
       - name: Install Odin (Windows)
         if: runner.os == 'Windows'
@@ -44,7 +47,11 @@ jobs:
           curl -sLO https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
           New-Item -ItemType Directory -Path odin-install
           Expand-Archive -Path ${{ matrix.odin_zip }} -DestinationPath odin-install
-          echo "$PWD\odin-install" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          $odinExe = Get-ChildItem -Recurse -Filter "odin.exe" odin-install | Select-Object -First 1
+          echo "$($odinExe.DirectoryName)" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Verify Odin
+        run: odin version
 
       - name: Build
         run: odin build src -collection:src=src -out:${{ matrix.binary }}
