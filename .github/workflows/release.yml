@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            odin_zip: odin-ubuntu-amd64-dev-2026-01.zip
+            binary:   odx
+            asset:    odx-linux-amd64
+
+          - os: macos-13
+            odin_zip: odin-macos-amd64-dev-2026-01.zip
+            binary:   odx
+            asset:    odx-macos-amd64
+
+          - os: windows-latest
+            odin_zip: odin-windows-amd64-dev-2026-01.zip
+            binary:   odx.exe
+            asset:    odx-windows-amd64.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Odin (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          curl -sLO https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
+          mkdir odin-install
+          unzip -q ${{ matrix.odin_zip }} -d odin-install
+          echo "$PWD/odin-install" >> $GITHUB_PATH
+
+      - name: Install Odin (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          curl -sLO https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
+          New-Item -ItemType Directory -Path odin-install
+          Expand-Archive -Path ${{ matrix.odin_zip }} -DestinationPath odin-install
+          echo "$PWD\odin-install" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build
+        run: odin build src -collection:src=src -out:${{ matrix.binary }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.binary }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            odx-linux-amd64/odx
+            odx-macos-amd64/odx
+            odx-windows-amd64.exe/odx.exe
