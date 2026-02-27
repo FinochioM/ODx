@@ -28,7 +28,9 @@ Args :: struct {
     clean_all: bool,
     raw_args : []string,
     json     : bool,
-    watch:     bool,
+    watch    : bool,
+    defines  : [dynamic]string,
+    flags    : [dynamic]string,
 }
 
 parse :: proc(argv: []string) -> Args {
@@ -39,6 +41,8 @@ parse :: proc(argv: []string) -> Args {
 
     args: Args
     args.path = "."
+    args.defines = make([dynamic]string)
+    args.flags   = make([dynamic]string)
 
     switch argv[0] {
     case "run":    args.command = .Run
@@ -87,6 +91,16 @@ parse :: proc(argv: []string) -> Args {
                 i += 1
                 args.out = rest[i]
             }
+        case rest[i] == "--define":
+            if i+1 < len(rest) {
+                i += 1
+                append(&args.defines, rest[i])
+            }
+        case rest[i] == "--flag":
+            if i+1 < len(rest) {
+                i += 1
+                append(&args.flags, rest[i])
+            }
         case rest[i] == "--watch":
             args.watch = true
         case rest[i] == "--json":
@@ -99,6 +113,10 @@ parse :: proc(argv: []string) -> Args {
             args.target = rest[i][len("--target="):]
         case strings.has_prefix(rest[i], "-o="):
             args.out = rest[i][len("-o="):]
+        case strings.has_prefix(rest[i], "--define="):
+            append(&args.defines, rest[i][len("--define="):])
+        case strings.has_prefix(rest[i], "--flag="):
+            append(&args.flags, rest[i][len("--flag="):])
         case len(rest[i]) > 0 && rest[i][0] != '-':
             args.path = rest[i]
         }
@@ -126,6 +144,8 @@ Flags:
   --profile dev|release|test
   --target  host|<triple>
   -o <path>
+  --define  K=V   (repeatable, merged on top of profile)
+  --flag    F     (repeatable, merged on top of profile)
   -v / --verbose
   -q / --quiet
   --no-cache

@@ -20,6 +20,8 @@ Build_Args :: struct {
     verbose:  bool,
     no_cache: bool,
     watch:    bool,
+    cli_flags: []string,
+    cli_defines: []string,
 }
 
 build :: proc(a: Build_Args) -> bool {
@@ -125,18 +127,26 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
         time  = events.now_string(context.temp_allocator),
     })
 
+    profile_flags:   []string
+    profile_defines: map[string]string
+
+    if has_manifest {
+        if p, found := manifest.profiles[profile]; found {
+            profile_flags   = p.flags
+            profile_defines = p.defines
+        }
+    }
+
+    flags, defines := merge_profile_overrides(
+        profile_flags,
+        profile_defines,
+        a.cli_flags,
+        a.cli_defines,
+    )
+
     if !a.no_cache {
         sources, src_ok := module.collect_sources(mod.root)
         if src_ok {
-            flags: []string
-            defines: map[string]string
-            if has_manifest {
-                if p, found := manifest.profiles[profile]; found {
-                    flags   = p.flags
-                    defines = p.defines
-                }
-            }
-
             odin_ver := get_odin_version(context.temp_allocator)
             key, key_ok := cache.compute_task_key({
                 task_name    = "build",
@@ -173,21 +183,18 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
 
     append(&argv, odin_cmd, "build", entry, fmt.aprintf("-out:%s", bin_path))
 
-    if has_manifest {
-        if p, found := manifest.profiles[profile]; found {
-            for flag in p.flags {
-                append(&argv, flag)
-            }
-            for k, v in p.defines {
-                append(&argv, fmt.aprintf("-define:%s=%s", k, v))
-            }
-        }
+    for flag in flags {
+        append(&argv, flag)
+    }
+    for k, v in defines {
+        append(&argv, fmt.aprintf("-define:%s=%s", k, v))
+    }
 
+    if has_manifest {
         for col_name, rel_path in manifest.build.collections {
             abs_path := filepath.join({mod.root, rel_path})
             append(&argv, fmt.aprintf("-collection:%s=%s", col_name, abs_path))
         }
-
         for col_name, abs_path in extra_collections {
             append(&argv, fmt.aprintf("-collection:%s=%s", col_name, abs_path))
         }

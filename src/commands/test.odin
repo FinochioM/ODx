@@ -13,6 +13,8 @@ Test_Args :: struct {
     target:  string,
     verbose: bool,
     watch:   bool,
+    cli_defines: []string,
+    cli_flags: []string,
 }
 
 test :: proc(a: Test_Args) -> bool {
@@ -62,20 +64,36 @@ test_once :: proc(a: Test_Args) -> bool {
         odin_cmd = manifest.build.odin_cmd
     }
 
+    profile_flags:   []string
+    profile_defines: map[string]string
+
+    if has_manifest {
+        if p, found := manifest.profiles[profile]; found {
+            profile_flags   = p.flags
+            profile_defines = p.defines
+        }
+    }
+
+    flags, defines := merge_profile_overrides(
+        profile_flags,
+        profile_defines,
+        a.cli_flags,
+        a.cli_defines,
+    )
+
     argv := make([dynamic]string)
     defer delete(argv)
 
     append(&argv, odin_cmd, "test", entry)
 
+    for flag in flags {
+        append(&argv, flag)
+    }
+    for k, v in defines {
+        append(&argv, fmt.aprintf("-define:%s=%s", k, v))
+    }
+
     if has_manifest {
-        if p, found := manifest.profiles[profile]; found {
-            for flag in p.flags {
-                append(&argv, flag)
-            }
-            for k, v in p.defines {
-                append(&argv, fmt.aprintf("-define:%s=%s", k, v))
-            }
-        }
         for col_name, rel_path in manifest.build.collections {
             abs_path := filepath.join({mod.root, rel_path})
             append(&argv, fmt.aprintf("-collection:%s=%s", col_name, abs_path))

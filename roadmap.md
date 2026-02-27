@@ -1,6 +1,6 @@
 # 0.2.0
 **`--define` / `--flag` CLI overrides**  
-Merge CLI-supplied defines and flags on top of the active profile. Included in cache key.
+Merge CLI-supplied defines and flags on top of the active profile. Included in cache key :: **DONE**
 
 **Richer template variables**  
 Add `{env.VAR}`, `{bin_dir}`, `{name}`, `{cache_dir}` to task templates.

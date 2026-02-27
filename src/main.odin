@@ -27,6 +27,8 @@ main :: proc() {
                 verbose = args.verbose,
                 no_cache = args.no_cache,
                 watch = args.watch,
+                cli_defines = args.defines[:],
+                cli_flags = args.flags[:],
             }) {
                 os.exit(1)
             }
@@ -55,6 +57,8 @@ main :: proc() {
                 profile = args.profile,
                 target = args.target,
                 verbose = args.verbose,
+                cli_defines = args.defines[:],
+                cli_flags = args.flags[:],
             }) {
                 os.exit(1)
             }
@@ -65,6 +69,8 @@ main :: proc() {
                 target = args.target,
                 verbose = args.verbose,
                 watch = args.watch,
+                cli_defines = args.defines[:],
+                cli_flags = args.flags[:],
             }) {
                 os.exit(1)
             }
