@@ -2,6 +2,7 @@ package commands
 
 import "core:fmt"
 import "core:os"
+import "core:os/os2"
 import "core:path/filepath"
 import "src:module"
 
@@ -63,5 +64,5 @@ remove_dir_all :: proc(path: string) -> bool {
         }
     }
 
-    return os.remove_directory(path) == os.ERROR_NONE
+    return os2.remove(path) == nil
 }
