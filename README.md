@@ -1,7 +1,9 @@
 # odx
 
-A build tool for [Odin](https://odin-lang.org/).
+A build tool for [Odin](https://odin-lang.org/). <br>
 _This is mostly a hobby project, odin is the language I default to and I started this project as a practice exercise_
+
+**Contributing** is welcome, please make a pull request and I will take a look at it!
 
 ## Installation
 
@@ -13,7 +15,7 @@ You can download one of the auto-generated binaries from [Releases](https://gith
 
 You can also just build from source, which is better in my opinion.
 
-It requires [Odin](https://odin-lang.org/) to be installed.
+It requires odin to be installed.
 
 ```sh
 git clone https://github.com/FinochioM/odx
@@ -79,3 +81,6 @@ Without a config file, odx looks for `src/main.odin` or `main.odin` and builds f
 ## Caching
 
 Builds are cached by content hash. A task only reruns if its source files, flags, defines, or tool version changed. use the `--no-cache` flag to force a full rebuild.
+
+## Roadmap
+Future changes or bug fixes might be added [here](roadmap.md) (if I remember to do it)
