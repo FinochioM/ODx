@@ -12,7 +12,7 @@ Opt-in shell execution for tasks. Shell is never on without explicit user intent
 `deps = ["compile"]` works for example.
 
 **Structured Odin diagnostics**  
-Parse compiler stderr into file/line/col. Clean output + `Diagnostic` JSON events.
+Parse compiler stderr into file/line/col. Clean output + `Diagnostic` JSON events. **DONE**
 
 **`--explain` flag**  
 Print the task graph that would run, then exit. Make it work with `--json` too.
