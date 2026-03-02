@@ -11,6 +11,7 @@ import "src:deps"
 import "src:events"
 import "src:module"
 import "src:watch"
+import "src:diagnostics"
 
 Build_Args :: struct {
     path:     string,
@@ -221,7 +222,12 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
 
     if state.exit_code != 0 {
         if len(stderr) > 0 {
-            fmt.eprint(string(stderr))
+            structured, remainder := diagnostics.partition(string(stderr))
+            diagnostics.print_diagnostics(structured)
+
+            if len(remainder) > 0 {
+                fmt.eprint(remainder)
+            }
         }
         events.emit(events.Task_Finished{event = "task_finished", task = "build", elapsed_ms = time.duration_milliseconds(time.diff(task_start, time.now())), success = false})
         fmt.eprintfln("odx: build failed (exit code %d)", state.exit_code)

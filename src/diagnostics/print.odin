@@ -11,7 +11,7 @@ print_diagnostics :: proc(diagnostics: []Diagnostic) {
 }
 
 print_raw :: proc(stderr: string) {
-    text := strderr
+    text := stderr
 
     for line in strings.split_lines_iterator(&text) {
         trimmed := strings.trim_space(line)

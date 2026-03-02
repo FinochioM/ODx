@@ -43,7 +43,7 @@ parse_line :: proc(raw: string, allocator := context.allocator) -> (d: Diagnosti
         return {}, false
     }
 
-    rest := strings.trim_space(s[paren_close + 1])
+    rest := strings.trim_space(s[paren_close + 1:])
 
     colon2 := strings.index(rest, ":")
     if colon2 < 0 {
@@ -51,7 +51,7 @@ parse_line :: proc(raw: string, allocator := context.allocator) -> (d: Diagnosti
     }
 
     level := strings.trim_space(rest[:colon2])
-    message := strings.trim_space(rest[colon2 + 1])
+    message := strings.trim_space(rest[colon2 + 1:])
 
     if len(file) == 0 || len(level) == 0 || len(message) == 0 {
         return {}, false
