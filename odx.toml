@@ -43,3 +43,6 @@ cmd = ["echo", "a"]
 [tasks.b]
 deps = ["a"]
 cmd = ["echo", "b"]
+
+[tasks.vars_test]
+cmd = ["echo", "{name}", "{cache_dir}", "{bin_dir}"]

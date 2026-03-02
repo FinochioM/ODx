@@ -285,11 +285,25 @@ outputs_exist :: proc(patterns: []string, root: string, vars: map[string]string)
 @(private)
 build_template_vars :: proc(mod: module.Module, manifest: module.Manifest) -> map[string]string {
     vars := make(map[string]string)
+
+    out_dir :=  filepath.join({mod.root, manifest.out_dir})
+    profile := manifest.build.default_profile
+    target := manifest.build.default_target
+    name := manifest.name
+
+    if name == "" {
+        name = mod.name
+    }
+    
     vars["{module_root}"] = mod.root
-    vars["{out_dir}"]     = filepath.join({mod.root, manifest.out_dir})
+    vars["{out_dir}"]     = out_dir
     vars["{gen_dir}"]     = filepath.join({mod.root, manifest.out_dir, "gen"})
-    vars["{profile}"]     = manifest.build.default_profile
-    vars["{target}"]      = manifest.build.default_target
+    vars["{profile}"]     = profile
+    vars["{target}"]      = target
+    vars["{name}"]        = name
+    vars["{cache_dir}"]   = cache.get_cache_dir()
+    vars["{bin_dir}"]     = filepath.join({out_dir, target, profile, "bin"})
+
     return vars
 }
 
