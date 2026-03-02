@@ -6,6 +6,7 @@ import "core:path/filepath"
 import "core:strings"
 import "src:module"
 import "src:watch"
+import "src:diagnostics"
 
 Test_Args :: struct {
     path:    string,
@@ -122,7 +123,12 @@ test_once :: proc(a: Test_Args) -> bool {
 
     if state.exit_code != 0 {
         if len(stderr) > 0 {
-            fmt.eprint(string(stderr))
+            structured, remainder := diagnostics.partition(string(stderr))
+            diagnostics.print_diagnostics(structured)
+
+            if len(remainder) > 0 {
+                fmt.eprintln(remainder)
+            }
         }
         fmt.eprintfln("odx: tests failed (exit code %d)", state.exit_code)
         return false

@@ -5,6 +5,7 @@ import "core:os/os2"
 import "core:path/filepath"
 import "core:strings"
 import "src:module"
+import "src:diagnostics"
 
 Check_Args :: struct {
     path:       string,
@@ -93,7 +94,12 @@ check :: proc(a: Check_Args) -> bool {
 
     if state.exit_code != 0 {
         if len(stderr) > 0 {
-            fmt.eprint(string(stderr))
+            structured, remainder := diagnostics.partition(string(stderr))
+            diagnostics.print_diagnostics(structured)
+
+            if len(remainder) > 0 {
+                fmt.eprintln(remainder)
+            }
         }
 
         fmt.eprintfln("odx: check failed (exit code %d)", state.exit_code)
