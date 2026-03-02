@@ -3,7 +3,7 @@
 Merge CLI-supplied defines and flags on top of the active profile. Included in cache key :: **DONE**
 
 **Richer template variables**  
-Add `{env.VAR}`, `{bin_dir}`, `{name}`, `{cache_dir}` to task templates.
+Add `{env.VAR}`, `{bin_dir}`, `{name}`, `{cache_dir}` to task templates.  **DONE**
 
 **`--allow-shell` + per-task `shell = true`**  
 Opt-in shell execution for tasks. Shell is never on without explicit user intent.
