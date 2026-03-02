@@ -52,6 +52,20 @@ jobs:
       - name: Verify Odin
         run: odin version
 
+      - name: Set version from tag (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "package version" > src/version/version.odin
+          echo "" >> src/version/version.odin
+          echo "ODX_VERSION :: \"$VERSION\"" >> src/version/version.odin
+
+      - name: Set version from tag (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $VERSION = "${{ github.ref_name }}".TrimStart("v")
+          "package version`n`nODX_VERSION :: `"$VERSION`"" | Set-Content src/version/version.odin
+
       - name: Build
         run: odin build src -collection:src=src -out:${{ matrix.binary }}
 
