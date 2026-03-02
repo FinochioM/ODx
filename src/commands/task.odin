@@ -162,7 +162,10 @@ exec_task :: proc(
     defer delete(argv)
 
     for part in task.cmd {
-        append(&argv, expand_vars(part, var_map, run_args))
+        expanded, exp_ok := expand_vars(part, var_map, run_args, name)
+        if !exp_ok do return false
+
+        append(&argv, expanded)
     }
 
     env := make([dynamic]string)
@@ -308,13 +311,35 @@ build_template_vars :: proc(mod: module.Module, manifest: module.Manifest) -> ma
 }
 
 @(private)
-expand_vars :: proc(s: string, vars: map[string]string, run_args: []string) -> string {
+expand_vars :: proc(s: string, vars: map[string]string, run_args: []string, task_name: string) -> (string, bool) {
     if s == "{args}" {
-        return strings.join(run_args, " ")
+        return strings.join(run_args, " "), true
     }
+
     result := s
     for k, v in vars {
         result, _ = strings.replace_all(result, k, v)
     }
-    return result
+
+    for strings.contains(result, "{env.") {
+        start := strings.index(result, "{env.")
+        end   := strings.index(result[start:], "}")
+        if end < 0 {
+            break
+        }
+        end += start
+
+        placeholder := result[start : end+1]
+        var_name    := result[start+5 : end]
+
+        value, set := os.lookup_env(var_name)
+        if !set {
+            fmt.eprintfln("odx: task '%s': template variable %s is not set", task_name, placeholder)
+            return "", false
+        }
+
+        result, _ = strings.replace_all(result, placeholder, value)
+    }
+
+    return result, true
 }

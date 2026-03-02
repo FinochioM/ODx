@@ -46,3 +46,9 @@ cmd = ["echo", "b"]
 
 [tasks.vars_test]
 cmd = ["echo", "{name}", "{cache_dir}", "{bin_dir}"]
+
+[tasks.env_test]
+cmd = ["echo", "{env.HOME}"]
+
+[tasks.env_missing]
+cmd = ["echo", "{env.NON_EXISTANT}"]
