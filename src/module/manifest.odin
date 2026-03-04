@@ -43,6 +43,7 @@ Task :: struct {
     inputs:  []string,
     outputs: []string,
     env:     map[string]string,
+    shell:  bool,
 }
 
 Dep_Kind :: enum { Path, Git }
@@ -118,6 +119,7 @@ load_manifest :: proc(path: string, allocator := context.allocator) -> (m: Manif
                 inputs =  toml.get_array(tt, "inputs"),
                 outputs = toml.get_array(tt, "outputs"),
                 env =     table_to_string_map(toml.get_table(tt, "env"), allocator),
+                shell = toml.get_string(tt, "shell") == "true",
             }
         }
     }
