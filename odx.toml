@@ -52,3 +52,7 @@ cmd = ["echo", "{env.HOME}"]
 
 [tasks.env_missing]
 cmd = ["echo", "{env.NON_EXISTANT}"]
+
+[tasks.shell_test]
+shell = true
+cmd = ["echo hello | tr a-z A-Z"]

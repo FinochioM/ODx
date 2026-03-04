@@ -171,6 +171,22 @@ exec_task :: proc(
         append(&argv, expanded)
     }
 
+    if task.shell {
+        if !allow_shell {
+            fmt.eprintfln("odx: task '%s' requires shell execution; rerun with --allow-shell", name)
+            return false
+        }
+
+        joined := strings.join(argv[:], " ")
+        clear(&argv)
+
+        when ODIN_OS == .Windows {
+            append(&argv, "cmd.exe", "/C", joined)
+        } else {
+            append(&argv, "/bin/sh", "-c", joined)
+        }
+    }
+
     env := make([dynamic]string)
     defer delete(env)
 
