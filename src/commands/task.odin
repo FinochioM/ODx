@@ -362,3 +362,13 @@ expand_vars :: proc(s: string, vars: map[string]string, run_args: []string, task
 
     return result, true
 }
+
+@(private)
+is_builtin :: proc(name: string) -> bool {
+    switch name {
+        case "compile", "check", "test", "run", "clean":
+            return true
+    }
+
+    return false
+}
