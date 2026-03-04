@@ -1,3 +1,3 @@
 package version
 
-ODX_VERSION :: "0.1.1-dev"
+ODX_VERSION :: "0.1.5"

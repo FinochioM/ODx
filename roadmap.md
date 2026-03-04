@@ -6,10 +6,10 @@ Merge CLI-supplied defines and flags on top of the active profile. Included in c
 Add `{env.VAR}`, `{bin_dir}`, `{name}`, `{cache_dir}` to task templates.  **DONE**
 
 **`--allow-shell` + per-task `shell = true`**  
-Opt-in shell execution for tasks. Shell is never on without explicit user intent.
+Opt-in shell execution for tasks. Shell is never on without explicit user intent. **DONE**
 
 **User tasks can depend on built-ins**  
-`deps = ["compile"]` works for example.
+`deps = ["compile"]` works for example. **DONE**
 
 **Structured Odin diagnostics**  
 Parse compiler stderr into file/line/col. Clean output + `Diagnostic` JSON events. **DONE**
