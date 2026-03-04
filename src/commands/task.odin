@@ -15,6 +15,7 @@ Task_Args :: struct {
     task_name: string,
     verbose:   bool,
     run_args:  []string,
+    allow_shell: bool,
 }
 
 run_task :: proc(a: Task_Args) -> bool {
@@ -43,7 +44,7 @@ run_task :: proc(a: Task_Args) -> bool {
         return false
     }
 
-    return exec_task(a.task_name, task, mod, manifest, a.verbose, a.run_args)
+    return exec_task(a.task_name, task, mod, manifest, a.verbose, a.run_args, a.allow_shell)
 }
 
 @(private)
@@ -53,6 +54,7 @@ run_deps :: proc(
     manifest:  module.Manifest,
     verbose:   bool,
     in_progress: ^[dynamic]string,
+    allow_shell: bool,
 ) -> bool {
     for dep_name in task.deps {
         for visiting in in_progress^ {
@@ -70,11 +72,11 @@ run_deps :: proc(
 
         append(in_progress, dep_name)
 
-        if !run_deps(dep_task, mod, manifest, verbose, in_progress) {
+        if !run_deps(dep_task, mod, manifest, verbose, in_progress, allow_shell) {
             return false
         }
 
-        if !exec_task(dep_name, dep_task, mod, manifest, verbose, nil) {
+        if !exec_task(dep_name, dep_task, mod, manifest, verbose, nil, allow_shell) {
             fmt.eprintfln("odx: dependency '%s' failed", dep_name)
             return false
         }
@@ -92,6 +94,7 @@ exec_task :: proc(
     manifest: module.Manifest,
     verbose:  bool,
     run_args: []string,
+    allow_shell: bool,
 ) -> bool {
     if len(task.cmd) == 0 {
         fmt.eprintfln("odx: task '%s' has no cmd defined", name)
@@ -102,7 +105,7 @@ exec_task :: proc(
         in_progress := make([dynamic]string)
         defer delete(in_progress)
         append(&in_progress, name)
-        if !run_deps(task, mod, manifest, verbose, &in_progress) {
+        if !run_deps(task, mod, manifest, verbose, &in_progress, allow_shell) {
             return false
         }
     }

@@ -21,7 +21,7 @@ run_hooks :: proc(hooks: []string, mod: module.Module, manifest: module.Manifest
             fmt.printfln("odx: running hook '%s'", hook)
         }
 
-        if !exec_task(name, task, mod, manifest, verbose, nil) {
+        if !exec_task(name, task, mod, manifest, verbose, nil, false) {
             fmt.eprintfln("odx: hook '%s' failed, aborting", hook)
             return false
         }
