@@ -149,6 +149,9 @@ parse_value :: proc(src: string, allocator := context.allocator) -> (Value, bool
     case '[': return parse_array(src, allocator)
     case '{': return parse_inline_table(src, allocator)
     }
+    if src == "true" || src == "false" {
+        return strings.clone(src, allocator), true
+    }
     return nil, false
 }
 

@@ -56,3 +56,8 @@ cmd = ["echo", "{env.NON_EXISTANT}"]
 [tasks.shell_test]
 shell = true
 cmd = ["echo hello | tr a-z A-Z"]
+
+[tasks.count_sources]
+cmd = ["find", "src", "-name", "*.odin", "-type", "f"]
+[tasks.count_sources_pretty]
+cmd = ["find", "src", "-name", "*.odin", "-type", "f", "|", "wc", "-l"]

@@ -80,6 +80,7 @@ main :: proc() {
                 task_name = args.task_name,
                 verbose = args.verbose,
                 run_args = args.raw_args,
+                allow_shell = args.allow_shell,
             }) {
                 os.exit(1)
             }
