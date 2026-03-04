@@ -31,6 +31,7 @@ Args :: struct {
     watch    : bool,
     defines  : [dynamic]string,
     flags    : [dynamic]string,
+    allow_shell: bool,
 }
 
 parse :: proc(argv: []string) -> Args {
@@ -101,6 +102,8 @@ parse :: proc(argv: []string) -> Args {
                 i += 1
                 append(&args.flags, rest[i])
             }
+        case rest[i] == "--allow-shell":
+            args.allow_shell = true
         case rest[i] == "--watch":
             args.watch = true
         case rest[i] == "--json":
@@ -149,5 +152,6 @@ Flags:
   -v / --verbose
   -q / --quiet
   --no-cache
-  --watch`)
+  --watch
+  --allow-shell`)
 }
