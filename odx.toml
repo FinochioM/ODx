@@ -29,35 +29,6 @@ defines = {}
 [deps]
 odin_steamworks = { git = "https://github.com/jakubtomsu/odin-steamworks", rev = "ca307bcd51d849508d26988fbda0d4cdde9a6e68" }
 
-[tasks.greet]
-cmd = ["echo", "greet"]
-
-[tasks.greet_with_dep]
-deps = ["greet"]
-cmd = ["echo", "greet_with_dep"]
-
-[tasks.a]
-deps = ["b"]
-cmd = ["echo", "a"]
-
-[tasks.b]
-deps = ["a"]
-cmd = ["echo", "b"]
-
-[tasks.vars_test]
-cmd = ["echo", "{name}", "{cache_dir}", "{bin_dir}"]
-
-[tasks.env_test]
-cmd = ["echo", "{env.HOME}"]
-
-[tasks.env_missing]
-cmd = ["echo", "{env.NON_EXISTANT}"]
-
-[tasks.shell_test]
-shell = true
-cmd = ["echo hello | tr a-z A-Z"]
-
-[tasks.count_sources]
-cmd = ["find", "src", "-name", "*.odin", "-type", "f"]
-[tasks.count_sources_pretty]
-cmd = ["find", "src", "-name", "*.odin", "-type", "f", "|", "wc", "-l"]
+[tasks.integration]
+deps = ["compile"]
+cmd = ["echo", "running integration checks agains", "{bin_dir}/myapp"]

@@ -47,12 +47,11 @@ run_task :: proc(a: Task_Args) -> bool {
     return exec_task(a.task_name, task, mod, manifest, a.verbose, a.run_args, a.allow_shell)
 }
 
-@(private)
 run_deps :: proc(
-    task:      module.Task,
-    mod:       module.Module,
-    manifest:  module.Manifest,
-    verbose:   bool,
+    task:        module.Task,
+    mod:         module.Module,
+    manifest:    module.Manifest,
+    verbose:     bool,
     in_progress: ^[dynamic]string,
     allow_shell: bool,
 ) -> bool {
@@ -62,6 +61,14 @@ run_deps :: proc(
                 fmt.eprintfln("odx: cycle detected: '%s' is already in the current dependency chain", dep_name)
                 return false
             }
+        }
+
+        if is_builtin(dep_name) {
+            if !dispatch_builtin(dep_name, mod, manifest, verbose) {
+                fmt.eprintfln("odx: built-in dependency '%s' failed", dep_name)
+                return false
+            }
+            continue
         }
 
         dep_task, found := manifest.tasks[dep_name]
@@ -370,5 +377,39 @@ is_builtin :: proc(name: string) -> bool {
             return true
     }
 
+    return false
+}
+
+@(private)
+dispatch_builtin :: proc(name: string, mod: module.Module, manifest: module.Manifest, verbose: bool) -> bool {
+    switch name {
+    case "compile":
+        _, ok := build_binary({
+            path    = mod.root,
+            profile = manifest.build.default_profile,
+            target  = manifest.build.default_target,
+            verbose = verbose,
+        })
+        return ok
+    case "check":
+        return check({
+            path    = mod.root,
+            profile = manifest.build.default_profile,
+            target  = manifest.build.default_target,
+            verbose = verbose,
+        })
+    case "test":
+        return test({
+            path    = mod.root,
+            profile = "test",
+            verbose = verbose,
+        })
+    case "clean":
+        return clean({
+            path    = mod.root,
+            verbose = verbose,
+        })
+    }
+    fmt.eprintfln("odx: unknown built-in task '%s'", name)
     return false
 }
