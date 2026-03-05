@@ -1,11 +1,28 @@
-# odx
+<img align="left" style="width:240px" src="logo/odx.png" width="288px">
 
-A build tool for [Odin](https://odin-lang.org/). <br>
-_This is mostly a hobby project, odin is the language I default to and I started this project as a practice exercise_
+<br>
+<br>
+<br>
 
-**Contributing** is welcome, please make a pull request and I will take a look at it!
+**A build tool for [Odin](https://odin-lang.org/).** <br>
+Odx is an unofficial build tool/system for the Odin programming language. <br>
+It handles building, running, testing and caching for Odin projects.
 
-## Installation
+*NOTE: This is an unofficial project & it is being actively developed, meaning some things could be changed in future versions.*
+
+---
+<br clear="left">
+
+[![Made with Odin](https://img.shields.io/badge/made%20with-Odin-blue)](https://odin-lang.org/)
+[![GitHub Releases Downloads](https://img.shields.io/github/downloads/FinochioM/ODx/total)](https://github.com/FinochioM/ODx/releases)
+[![GitHub Stars](https://img.shields.io/github/stars/FinochioM/ODx?style=flat&label=stars)](https://github.com/FinochioM/ODx/stargazers)
+[![GitHub commits since tagged version](https://img.shields.io/github/commits-since/FinochioM/ODx/latest)](https://github.com/FinochioM/ODx/commits/master)
+[![License](https://img.shields.io/github/license/FinochioM/ODx)](LICENSE)
+
+[![GitHub Release](https://img.shields.io/github/v/release/FinochioM/ODx)](https://github.com/FinochioM/ODx/releases/latest)
+[![Build](https://github.com/FinochioM/ODx/actions/workflows/release.yml/badge.svg)](https://github.com/FinochioM/ODx/actions/workflows/release.yml)
+
+## Installation 
 
 **Prebuilt binary**
 
