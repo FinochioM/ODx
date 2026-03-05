@@ -23,6 +23,7 @@ Build_Args :: struct {
     watch:    bool,
     cli_flags: []string,
     cli_defines: []string,
+    explain: bool,
 }
 
 build :: proc(a: Build_Args) -> bool {
@@ -62,6 +63,19 @@ build_binary :: proc(a: Build_Args) -> (bin_path: string, ok: bool) {
 
     entry, entry_ok := module.resolve_entry(mod, manifest, has_manifest)
     if !entry_ok do return "", false
+
+    if a.explain {
+        profile := a.profile
+        if profile == "" {
+            profile = manifest.build.default_profile if has_manifest else "dev"
+        }
+        target := a.target
+        if target == "" {
+            target = manifest.build.default_target if has_manifest else "host"
+        }
+        explain_build(profile, target, manifest)
+        return "", true
+    }
 
     extra_collections := make(map[string]string)
     defer delete(extra_collections)

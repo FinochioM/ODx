@@ -29,6 +29,7 @@ main :: proc() {
                 watch = args.watch,
                 cli_defines = args.defines[:],
                 cli_flags = args.flags[:],
+                explain = args.explain,
             }) {
                 os.exit(1)
             }
@@ -81,6 +82,7 @@ main :: proc() {
                 verbose = args.verbose,
                 run_args = args.raw_args,
                 allow_shell = args.allow_shell,
+                explain = args.explain,
             }) {
                 os.exit(1)
             }

@@ -107,7 +107,7 @@ parse :: proc(argv: []string) -> Args {
         case rest[i] == "--allow-shell":
             args.allow_shell = true
         case rest[i] == "--explain":
-            args.explain == true
+            args.explain = true
         case rest[i] == "--watch":
             args.watch = true
         case rest[i] == "--json":

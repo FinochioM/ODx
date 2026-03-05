@@ -16,6 +16,7 @@ Task_Args :: struct {
     verbose:   bool,
     run_args:  []string,
     allow_shell: bool,
+    explain: bool,
 }
 
 run_task :: proc(a: Task_Args) -> bool {
@@ -42,6 +43,11 @@ run_task :: proc(a: Task_Args) -> bool {
         fmt.eprintfln("odx: unknown task '%s'", a.task_name)
         fmt.eprintln("     run 'odx list' to see available tasks")
         return false
+    }
+
+    if a.explain {
+        explain_task(a.task_name, task, manifest)
+        return true
     }
 
     return exec_task(a.task_name, task, mod, manifest, a.verbose, a.run_args, a.allow_shell)
