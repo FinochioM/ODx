@@ -1,7 +1,6 @@
 <img align="left" style="width:240px" src="logo/odx.png" width="288px">
 
 <br>
-<br>
 
 **A build tool for [Odin](https://odin-lang.org/).** <br>
 Odx is an unofficial build tool/system for the Odin programming language. <br>
