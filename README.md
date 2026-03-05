@@ -11,7 +11,6 @@ It handles building, running, testing and caching for Odin projects.
 ---
 <br clear="left">
 
-[![Made with Odin](https://img.shields.io/badge/made%20with-Odin-blue)](https://odin-lang.org/)
 [![GitHub Releases Downloads](https://img.shields.io/github/downloads/FinochioM/ODx/total)](https://github.com/FinochioM/ODx/releases)
 [![GitHub Stars](https://img.shields.io/github/stars/FinochioM/ODx?style=flat&label=stars)](https://github.com/FinochioM/ODx/stargazers)
 [![GitHub commits since tagged version](https://img.shields.io/github/commits-since/FinochioM/ODx/latest)](https://github.com/FinochioM/ODx/commits/master)
