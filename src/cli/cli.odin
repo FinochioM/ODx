@@ -1,5 +1,6 @@
 package cli
 
+import "core:c/libc"
 import "core:fmt"
 import "core:os"
 import "core:strings"
@@ -32,6 +33,7 @@ Args :: struct {
     defines  : [dynamic]string,
     flags    : [dynamic]string,
     allow_shell: bool,
+    explain : bool,
 }
 
 parse :: proc(argv: []string) -> Args {
@@ -104,6 +106,8 @@ parse :: proc(argv: []string) -> Args {
             }
         case rest[i] == "--allow-shell":
             args.allow_shell = true
+        case rest[i] == "--explain":
+            args.explain == true
         case rest[i] == "--watch":
             args.watch = true
         case rest[i] == "--json":
@@ -153,5 +157,6 @@ Flags:
   -q / --quiet
   --no-cache
   --watch
-  --allow-shell`)
+  --allow-shell
+  --explain`)
 }
