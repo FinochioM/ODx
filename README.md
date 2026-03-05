@@ -2,7 +2,6 @@
 
 <br>
 <br>
-<br>
 
 **A build tool for [Odin](https://odin-lang.org/).** <br>
 Odx is an unofficial build tool/system for the Odin programming language. <br>
@@ -18,9 +17,7 @@ It handles building, running, testing and caching for Odin projects.
 [![GitHub Stars](https://img.shields.io/github/stars/FinochioM/ODx?style=flat&label=stars)](https://github.com/FinochioM/ODx/stargazers)
 [![GitHub commits since tagged version](https://img.shields.io/github/commits-since/FinochioM/ODx/latest)](https://github.com/FinochioM/ODx/commits/master)
 [![License](https://img.shields.io/github/license/FinochioM/ODx)](LICENSE)
-
 [![GitHub Release](https://img.shields.io/github/v/release/FinochioM/ODx)](https://github.com/FinochioM/ODx/releases/latest)
-[![Build](https://github.com/FinochioM/ODx/actions/workflows/release.yml/badge.svg)](https://github.com/FinochioM/ODx/actions/workflows/release.yml)
 
 ## Installation 
 
