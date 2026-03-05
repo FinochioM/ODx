@@ -1,0 +1,43 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [master]
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: ''
+  workflow_dispatch:
+    
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Odin
+        run: |
+          curl.exe -sLO --fail https://github.com/odin-lang/Odin/releases/download/dev-2026-01/odin-windows-amd64-dev-2026-01.zip
+          New-Item -ItemType Directory -Path odin-install
+          Expand-Archive -Path odin-windows-amd64-dev-2026-01.zip -DestinationPath odin-install
+          $odinExe = Get-ChildItem -Recurse -Filter "odin.exe" odin-install | Select-Object -First 1
+          echo "$($odinExe.DirectoryName)" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Verify Odin
+        run: odin version
+
+      - name: Set version
+        if: inputs.version != ''
+        run: |
+          $VERSION = "${{ inputs.version }}"
+          "package version`n`nODX_VERSION :: `"$VERSION`"" | Set-Content src/version/version.odin
+
+      - name: Build
+        run: odin build src -collection:src=src -out:odx.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: odx-windows-amd64.exe
+          path: odx.exe

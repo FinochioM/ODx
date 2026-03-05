@@ -1,0 +1,45 @@
+name: Build Linux
+
+on:
+  push:
+    branches: [master]
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: ''
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Odin
+        run: |
+          curl -sLO --fail https://github.com/odin-lang/Odin/releases/download/dev-2026-01/odin-linux-amd64-dev-2026-01.tar.gz
+          mkdir odin-install
+          tar -xzf odin-linux-amd64-dev-2026-01.tar.gz -C odin-install
+          ODIN_BIN=$(find odin-install -maxdepth 3 -name "odin" -type f | head -1)
+          chmod +x "$ODIN_BIN"
+          echo "$PWD/$(dirname $ODIN_BIN)" >> $GITHUB_PATH
+
+      - name: Verify Odin
+        run: odin version
+
+      - name: Set version
+        if: inputs.version != ''
+        run: |
+          echo "package version" > src/version/version.odin
+          echo "" >> src/version/version.odin
+          echo "ODX_VERSION :: \"${{ inputs.version }}\"" >> src/version/version.odin
+
+      - name: Build
+        run: odin build src -collection:src=src -out:odx
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: odx-linux-amd64
+          path: odx

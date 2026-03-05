@@ -15,8 +15,12 @@ It handles building, running, testing and caching for Odin projects.
 [![GitHub Releases Downloads](https://img.shields.io/github/downloads/FinochioM/ODx/total)](https://github.com/FinochioM/ODx/releases)
 [![GitHub Stars](https://img.shields.io/github/stars/FinochioM/ODx?style=flat&label=stars)](https://github.com/FinochioM/ODx/stargazers)
 [![GitHub commits since tagged version](https://img.shields.io/github/commits-since/FinochioM/ODx/latest)](https://github.com/FinochioM/ODx/commits/master)
-[![License](https://img.shields.io/github/license/FinochioM/ODx)](LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/FinochioM/ODx)](https://github.com/FinochioM/ODx/releases/latest)
+[![License](https://img.shields.io/badge/license-zlib-blue)](LICENSE)
+[![Latest Stable Release](https://img.shields.io/github/v/release/FinochioM/ODx?label=latest%20stable)](https://github.com/FinochioM/ODx/releases/latest)
+
+[![Build Windows](https://github.com/FinochioM/ODx/actions/workflows/build_windows.yml/badge.svg)](https://github.com/FinochioM/ODx/actions/workflows/build_windows.yml)
+[![Build Linux](https://github.com/FinochioM/ODx/actions/workflows/build_linux.yml/badge.svg)](https://github.com/FinochioM/ODx/actions/workflows/build_linux.yml)
+[![Build macOS](https://github.com/FinochioM/ODx/actions/workflows/build_macos.yml/badge.svg)](https://github.com/FinochioM/ODx/actions/workflows/build_macos.yml)
 
 ## Installation 
 

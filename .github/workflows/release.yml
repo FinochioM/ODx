@@ -1,4 +1,4 @@
-name: Build
+name: Release
 
 on:
   push:
@@ -6,81 +6,26 @@ on:
       - 'v*'
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            odin_zip: odin-linux-amd64-dev-2026-01.tar.gz
-            binary:   odx
-            asset:    odx-linux-amd64
+  linux:
+    uses: ./.github/workflows/build_linux.yml
+    with:
+      version: ${{ github.ref_name }}
 
-          - os: macos-14
-            odin_zip: odin-macos-arm64-dev-2026-01.tar.gz
-            binary:   odx
-            asset:    odx-macos-amd64
+  macos:
+    uses: ./.github/workflows/build_macos.yml
+    with:
+      version: ${{ github.ref_name }}
 
-          - os: windows-latest
-            odin_zip: odin-windows-amd64-dev-2026-01.zip
-            binary:   odx.exe
-            asset:    odx-windows-amd64.exe
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Odin (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          curl -sLO --fail https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
-          mkdir odin-install
-          tar -xzf ${{ matrix.odin_zip }} -C odin-install
-          ODIN_BIN=$(find odin-install -maxdepth 3 -name "odin" -type f | head -1)
-          chmod +x "$ODIN_BIN"
-          echo "$PWD/$(dirname $ODIN_BIN)" >> $GITHUB_PATH
-
-      - name: Install Odin (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          curl.exe -sLO --fail https://github.com/odin-lang/Odin/releases/download/dev-2026-01/${{ matrix.odin_zip }}
-          New-Item -ItemType Directory -Path odin-install
-          Expand-Archive -Path ${{ matrix.odin_zip }} -DestinationPath odin-install
-          $odinExe = Get-ChildItem -Recurse -Filter "odin.exe" odin-install | Select-Object -First 1
-          echo "$($odinExe.DirectoryName)" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      - name: Verify Odin
-        run: odin version
-
-      - name: Set version from tag (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          echo "package version" > src/version/version.odin
-          echo "" >> src/version/version.odin
-          echo "ODX_VERSION :: \"$VERSION\"" >> src/version/version.odin
-
-      - name: Set version from tag (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          $VERSION = "${{ github.ref_name }}".TrimStart("v")
-          "package version`n`nODX_VERSION :: `"$VERSION`"" | Set-Content src/version/version.odin
-
-      - name: Build
-        run: odin build src -collection:src=src -out:${{ matrix.binary }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.asset }}
-          path: ${{ matrix.binary }}
+  windows:
+    uses: ./.github/workflows/build_windows.yml
+    with:
+      version: ${{ github.ref_name }}
 
   release:
-    needs: build
+    needs: [linux, macos, windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - uses: actions/download-artifact@v4
 
