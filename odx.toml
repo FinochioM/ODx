@@ -32,3 +32,6 @@ odin_steamworks = { git = "https://github.com/jakubtomsu/odin-steamworks", rev =
 [tasks.integration]
 deps = ["compile"]
 cmd = ["echo", "running integration checks agains", "{bin_dir}/myapp"]
+
+[package]
+extras = ["README.md", "LICENSE"]
