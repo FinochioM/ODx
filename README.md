@@ -21,29 +21,28 @@ It handles building, running, testing and caching for Odin projects.
 [![Build Linux](https://github.com/FinochioM/ODx/actions/workflows/build_linux.yml/badge.svg)](https://github.com/FinochioM/ODx/actions/workflows/build_linux.yml)
 [![Build macOS](https://github.com/FinochioM/ODx/actions/workflows/build_macos.yml/badge.svg)](https://github.com/FinochioM/ODx/actions/workflows/build_macos.yml)
 
-## Installation 
-
-**Prebuilt binary**
-
-You can download one of the auto-generated binaries from [Releases](https://github.com/FinochioM/ODx/releases) and put it somewhere on your `PATH`.
-
-**Build from source**
-
-You can also just build from source, which is better in my opinion.
-
-It requires odin to be installed.
-
-```sh
-git clone https://github.com/FinochioM/odx
-cd odx
-odin build src -collection:src=src -out:build/odx
-```
 
 ## Wiki
-todo
+odx has a [wiki](https://github.com/FinochioM/ODx/wiki) page where you can find information about how to install & use the tool, commands, tasks, etc. <br>
+
+
+_If you find that something is either missing or not working as expected, please make a pull request_
+
+## Contributing
+This project is open to any kind of contributing. <br>
+If you have an idea please open a pull request [here](https://github.com/FinochioM/ODx/pulls).
 
 ## Roadmap
-Future changes or bug fixes will be added [here](roadmap.md).
+### 0.2.0:
+* [x] **`--define` / `--flag` CLI overrides**  
+* [x] **Richer template variables**  
+* [x] **`--allow-shell` + per-task `shell = true`**  
+* [x] **User tasks can depend on built-ins**  
+* [x] **Structured Odin diagnostics**  
+* [x] **`--explain` flag**  
+* [ ] **`odx package`** W.I.P
+* [ ] **Parallel task execution (`--jobs N`)**  
+* [ ] **Workspace support**  
 
 ## License
-ODx is licensed under the zlib license. Read the [LICENSE](LICENSE) for more information.
+odx is licensed under the zlib license. Read the [LICENSE](LICENSE) for more information.
