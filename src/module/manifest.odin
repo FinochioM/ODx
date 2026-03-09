@@ -14,6 +14,7 @@ Manifest :: struct {
     targets:  map[string]Target,
     tasks:    map[string]Task,
     deps:     map[string]Dep,
+    pkg:      Package_Config,
 }
 
 Build_Config :: struct {
@@ -52,6 +53,10 @@ Dep :: struct {
     kind:   Dep_Kind,
     url:    string,
     rev:    string,
+}
+
+Package_Config :: struct {
+    extras: []string,
 }
 
 load_manifest :: proc(path: string, allocator := context.allocator) -> (m: Manifest, ok: bool) {
@@ -137,6 +142,10 @@ load_manifest :: proc(path: string, allocator := context.allocator) -> (m: Manif
                 m.deps[name] = Dep{kind = .Git, url = git_str, rev = rev}
             }
         }
+    }
+
+    m.pkg = Package_Config{
+        extras = toml.get_array(table, "package.extras"),
     }
 
     return m, true

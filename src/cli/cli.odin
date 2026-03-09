@@ -14,6 +14,7 @@ Command :: enum {
     Task,
     List,
     Doctor,
+    Package,
 }
 
 Args :: struct {
@@ -56,6 +57,7 @@ parse :: proc(argv: []string) -> Args {
     case "task":   args.command = .Task
     case "list":   args.command = .List
     case "doctor": args.command = .Doctor
+    case "package":args.command = .Package
     case:
         fmt.eprintfln("odx: unknown command '%s'", argv[0])
         os.exit(1)
@@ -146,6 +148,7 @@ Commands:
   task    Run a named task
   list    List modules and tasks
   doctor  Show environment info
+  package Build and archive the binary
 
 Flags:
   --profile dev|release|test

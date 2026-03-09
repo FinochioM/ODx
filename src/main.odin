@@ -86,6 +86,17 @@ main :: proc() {
             }) {
                 os.exit(1)
             }
+        case .Package:
+            if !commands.pkg({
+                path    = args.path,
+                profile = args.profile,
+                target  = args.target,
+                verbose = args.verbose,
+                cli_defines = args.defines[:],
+                cli_flags   = args.flags[:],
+            }) {
+                os.exit(1)
+            }
         case:
             fmt.eprintln("Unknown command")
             os.exit(1)
