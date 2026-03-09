@@ -57,6 +57,20 @@ Event :: union {
     Cache_Miss,
     Command_Exec,
     Diagnostic,
+    Task_Graph,
+}
+
+Task_Graph_Node :: struct {
+    name: string `json:"name"`,
+    deps: []string `json:"deps"`,
+    inputs: []string `json:"inputs,omitempty"`,
+    outputs: []string `json:"outputs,omitempty"`,
+}
+
+Task_Graph :: struct {
+    event: string `json:"event"`,
+    root: string `json:"root"`,
+    nodes: []Task_Graph_Node `json:"nodes"`,
 }
 
 emit :: proc(e: Event) {
