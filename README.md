@@ -6,7 +6,7 @@
 Odx is a build tool/system for the Odin programming language. <br>
 It handles building, running, testing and caching for Odin projects.
 
-*NOTE: This is an unofficial project meaning some things could be changed in future versions.*
+*NOTE: This is an unofficial project.*
 
 ---
 <br clear="left">
